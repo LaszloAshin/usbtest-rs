@@ -4,11 +4,14 @@ RUN apt-get update \
 		openssh-server \
 		sudo \
 	&& rm -rf /var/lib/apt/lists/ \
-	&& useradd -m -g users -G sudo -s /bin/bash vagrant \
+	&& useradd -m -g users -s /bin/bash vagrant \
+	&& echo 'vagrant ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/vagrant \
+	&& echo chmod 0440 /etc/sudoers.d/vagrant \
 	&& install -m0700 -o vagrant -g users -d /home/vagrant/.ssh \
 	&& echo vagrant:vagrant | chpasswd \
+	&& echo root:vagrant | chpasswd \
 	&& mkdir /run/sshd
 
 COPY --chown=vagrant:users vagrant.pub /home/vagrant/.ssh/authorized_keys
 EXPOSE 22
-ENTRYPOINT [ "/usr/sbin/sshd", "-D" ]
+ENTRYPOINT [ "/usr/sbin/sshd", "-D", "-oUseDNS=no" ]
